@@ -1,7 +1,7 @@
-// Equal-resistor divider => Arduino sees half of sensor voltage
+
 const float DIV_RATIO = 0.5f;
 
-// ADC characteristics (Uno/Nano classic: 10-bit, 0–5 V)
+
 
 
 void setup() {
@@ -17,3 +17,4 @@ void loop() {
 
   delay(50);
 }
+
