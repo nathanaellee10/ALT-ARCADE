@@ -1,6 +1,10 @@
 import tkinter as tk
 import serial
+import playsound
+import threading
 
+def play_sound(path):
+    threading.Thread(target=playsound.playsound, args=(path,), daemon=True).start()
 
 LOGICAL_ROWS, LOGICAL_COLS = 1000, 1000
 CANVAS_SIZE = 500
@@ -26,6 +30,7 @@ BAUD = 9600
 ser = serial.Serial(PORT, BAUD, timeout=0.01)
 
 root = tk.Tk()
+root.configure(bg="black")
 canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, bg="black")
 canvas.pack()
 
@@ -111,11 +116,17 @@ def update_balloons():
         y -= speed
         canvas.coords(oval, x-15, y-15, x+15, y+15)
         canvas.coords(face, x, y)
-
+        ball_x = ball[0] * CELL_SIZE
+        ball_y = ball[1] * CELL_SIZE
         if y < -20:  
             canvas.delete(oval)
             canvas.delete(face)
             balloons.remove(balloon)
+        elif abs((ball_x)-x)<25 and abs((ball_y)-y)<25:
+            canvas.delete(oval)
+            canvas.delete(face)
+            balloons.remove(balloon)
+            play_sound("balloon.wav")
         else:
             balloon[3] = y  
 
@@ -174,20 +185,23 @@ def move_ball():
     if ball[1] <= 0 or ball[1] >= LOGICAL_ROWS-20:
         ball[3] *= -1
 
+
     if 60 <= ball[0] <= 80 and pbl <= ball[1] <= pbl+200:
         ball[0] = 81
-        ball[2] = abs(ball[2])
+        ball[2] = abs(ball[2])+1
         ball[3] += (ball[1] - (pbl+100))//30
+        play_sound("boing.wav")
 
     if LOGICAL_COLS-80 <= ball[0] <= LOGICAL_COLS-60 and pblo <= ball[1] <= pblo+200:
         ball[0] = LOGICAL_COLS-81
         ball[2] = -abs(ball[2])
         ball[3] += (ball[1] - (pblo+100))//30
+        play_sound("boing.wav")
 
     if ball[0] < 0:
         ai_score += 1
         canvas.itemconfig(score_text, text=f"{player_score}   {ai_score}")
-        reset_ball("ai")
+        reset_ball(1)
     elif ball[0] > LOGICAL_COLS-20:
         player_score += 1
         canvas.itemconfig(score_text, text=f"{player_score}   {ai_score}")
